@@ -49,6 +49,7 @@ def main():
         else:
             col12.warning("Please Set File Name")
     RAWS = st.number_input("Raws", 10, 10000, step=50)
+    st.markdown("---")
     col21,col22 =st.columns(2)
     if st.session_state.result is not {}:
         for i in list(st.session_state.result.keys()):
@@ -58,12 +59,12 @@ def main():
         if st.session_state.result != {}:
             col21.write(fill_df(st.session_state.result))
 
-
+    st.markdown("---")
     col1, col2 = st.columns(2)
 
     with col1:
         column_name = st.text_input("컬럼명 설정")
-        options = ["User_Set", "NAME", "DATE", "TIME"]
+        options = ["User_Set", "NAME", "DATE", "TIME", "OPTION"]
         ITEM = st.selectbox("Item", options)
 
         if ITEM == options[0]:  # User_Set 설정
@@ -128,7 +129,14 @@ def main():
                 end_Second = c3.number_input("End_Second",0,59,0)
                 total_end_seconds = end_Minute * 60 + end_Second
                 NONE_SET = st.number_input("Create missing value", 0)
-        if col2.button("Make column"):
+                
+                
+        if ITEM == options[4]: # option
+            OPTION_OPTIONS = st.text_input("List Up Options split by ','")
+            option_list = [option.strip() for option in OPTION_OPTIONS.split(',')]
+            NONE_SET = st.number_input("Create missing value", 0)
+            
+        if col2.button("Make column"):  
             data_colum = []
             if ITEM == options[0]:
                 if TYPE == "INT":
@@ -208,10 +216,35 @@ def main():
                         data_colum.append(f"{random_hour:02d}:{random_minute:02d}:{random_second:02d}")
                     if TIME_UNIT =="Minute:Second":
                         data_colum.append(f"{random_minute:02d}:{random_second:02d}")
-                    
+            
+            if ITEM == options[4]: # OPTINON
+                for i in range(RAWS):
+                    op = option_list[random.randint(0,len(option_list)-1)]
+                    data_colum.append(op)
             if data_colum != []:
                 if NONE_SET != 0:
                     data_colum = make_None(data_colum,NONE_SET)  
                 st.session_state.result[column_name] = data_colum
                 st.experimental_rerun()
-                
+    st.markdown("---")
+    cc1,cc2,cc3,cc4 = st.columns(4)
+    couple_start_column = cc1.radio("Start_Column",st.session_state.result)
+    couple_coupler = cc2.text_input("Coupler")
+    couple_end_column = cc3.radio("End_Column",st.session_state.result)
+    
+    
+# my_dict = {"key1": ["value1","value11"], "key2": ["value2","value12"], "key3": ["value3","value13"]}
+# l2 = []
+# c="-"
+# for i in range(2):
+#     l2.append(f"{my_dict['key1'][i]}{c}{my_dict['key2'][i]}")
+    
+    new_col_name = cc4.text_input("새로운 이름을 입력하세요")
+    if cc4.button("합체"):
+        new_col_li = []
+        for i in range(RAWS):
+            new_col_li.append(f"{st.session_state.result[couple_start_column][i]}{couple_coupler}{st.session_state.result[couple_end_column][i]}")
+        st.session_state.result[new_col_name] = new_col_li
+        st.experimental_rerun()
+
+
