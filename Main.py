@@ -74,7 +74,7 @@ def main():
             if TYPE == "STRING":
                 STR_MIN_SIZE = st.number_input("Text Length",0)
                 STR_MAX_SIZE = st.number_input("Text Length",1)
-                STR_LANGUAGE = st.multiselect("Choose language",["영어_대문자","영어_소문자","한글_자음","한글_모음","한글_자음+모음"])
+                STR_LANGUAGE = st.multiselect("Choose language",["영어_대문자","영어_소문자","한글_자음","한글_모음","한글_글자"])
                 NONE_SET = st.number_input("Create missing value", 0)
 
 
