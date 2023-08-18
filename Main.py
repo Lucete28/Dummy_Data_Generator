@@ -129,7 +129,7 @@ def main():
                                         language_list = choseongs
                                     elif STR_LANGUAGE[random_language] == "한글_모음":
                                         language_list = jungsongs
-                                    elif STR_LANGUAGE[random_language] == "한글_자음+모음":
+                                    elif STR_LANGUAGE[random_language] == "한글_글자":
                                         language_list = korean_word
                                     letter_source = language_list[random.randint(0,len(language_list)-1)]
                                     letter.append(letter_source)
