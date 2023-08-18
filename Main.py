@@ -3,7 +3,7 @@ import random
 import pandas as pd
 import base64
 import string
-
+from datetime import timedelta
 
 def main():
     # Session state 초기화
@@ -41,11 +41,14 @@ def main():
     FILE_NAME = col11.text_input("File name")
     if col12.button("Get Download Link"):
         if FILE_NAME:
-            df = fill_df(st.session_state.result)
-            col12.markdown(download_link(df, f"{FILE_NAME}.csv", "Click Here!"), unsafe_allow_html=True)
+            try:
+                df = fill_df(st.session_state.result)
+                col12.markdown(download_link(df, f"{FILE_NAME}.csv", "Click Here!"), unsafe_allow_html=True)
+            except:
+                st.warning("Please Make Columns First")
         else:
             col12.warning("Please Set File Name")
-    RAWS = st.number_input("Raws", 10, 1000, step=50)
+    RAWS = st.number_input("Raws", 10, 10000, step=50)
     col21,col22 =st.columns(2)
     if st.session_state.result is not {}:
         for i in list(st.session_state.result.keys()):
@@ -60,15 +63,14 @@ def main():
 
     with col1:
         column_name = st.text_input("컬럼명 설정")
-        options = ["User_Set", "NAME"]
+        options = ["User_Set", "NAME", "DATE", "TIME"]
         ITEM = st.selectbox("Item", options)
 
         if ITEM == options[0]:  # User_Set 설정
-            # TYPE = st.selectbox("Type", ["INT", "STRING", "FLOAT", "DATE"])
-            TYPE = st.selectbox("Type", ["INT", "STRING"])
+            TYPE = st.selectbox("Type", ["INT", "STRING", "FLOAT"])
             if TYPE == "INT":
-                MIN_RANGE = st.number_input("최소 값", 0)
-                MAX_RANGE = st.number_input("최대 값", 1)
+                MIN_RANGE = st.number_input("Min Value", 0)
+                MAX_RANGE = st.number_input("Max Value", 1)
                 # MAX_DUP = st.slider("최대 중복허용(%)", 0, 100, 100)
                 NONE_SET = st.number_input("Create missing value", 0)
             if TYPE == "STRING":
@@ -76,9 +78,12 @@ def main():
                 STR_MAX_SIZE = st.number_input("Text Length",1)
                 STR_LANGUAGE = st.multiselect("Choose language",["영어_대문자","영어_소문자","한글_자음","한글_모음","한글_글자"])
                 NONE_SET = st.number_input("Create missing value", 0)
-
-
-
+            if TYPE == "FLOAT":
+                DECIMAL_PLACE = st.number_input("decimal_places",0)
+                MIN_RANGE = st.number_input("Min Value", 0)
+                MAX_RANGE = st.number_input("Max Value", 1)
+                # MAX_DUP = st.slider("최대 중복허용(%)", 0, 100, 100)
+                NONE_SET = st.number_input("Create missing value", 0)
 
 
         if ITEM == options[1]:  # 이름 설정
@@ -87,22 +92,49 @@ def main():
                 COUPLER = st.selectbox("Choose Name Coupler",[" ","_","-","/","^"])
             NONE_SET = st.number_input("Create missing value", 0)
 
-    with col2:
-        if st.button("Make column"):
+        if ITEM == options[2]: # date
+            START_DATE = st.date_input("Start Date",)
+            END_DATE = st.date_input("End Date")
+            NONE_SET = st.number_input("Create missing value", 0)
+            
+        if ITEM == options[3]: # time
+            TIME_UNIT = st.selectbox("Time Unit",["Hour:Minute","Hour:Minute:Second","Minute:Second"])
+            if TIME_UNIT == "Hour:Minute":
+                c1,c2 = st.columns(2)
+                start_Hour = c1.number_input("start_Hour",0,24,0)
+                start_Minute = c2.number_input("start_Minute",0,59,0)
+                total_start_seconds = start_Hour * 3600 + start_Minute * 60
+                end_Hour = c1.number_input("End_Hour",0,24,0)
+                end_Minute = c2.number_input("End_Minute",0,59,0)
+                total_end_seconds = end_Hour * 3600 + end_Minute * 60
+                NONE_SET = st.number_input("Create missing value", 0)
+            if TIME_UNIT =="Hour:Minute:Second":
+                c1,c2,c3 = st.columns(3)
+                start_Hour = c1.number_input("start_Hour",0,24,0)
+                start_Minute = c2.number_input("start_Minute",0,59,0)
+                start_Second = c3.number_input("start_Second",0,59,0)
+                total_start_seconds = start_Hour * 3600 + start_Minute * 60 + start_Second
+                end_Hour = c1.number_input("End_Hour",0,24,0)
+                end_Minute = c2.number_input("End_Minute",0,59,0)
+                end_Second = c3.number_input("End_Second",0,59,0)
+                total_end_seconds = end_Hour * 3600 + end_Minute * 60 + end_Second
+                NONE_SET = st.number_input("Create missing value", 0)
+            if TIME_UNIT =="Minute:Second":
+                c2,c3 = st.columns(2)
+                start_Minute = c2.number_input("start_Minute",0,59,0)
+                start_Second = c3.number_input("start_Second",0,59,0)
+                total_start_seconds = start_Minute * 60 + start_Second
+                end_Minute = c2.number_input("End_Minute",0,59,0)
+                end_Second = c3.number_input("End_Second",0,59,0)
+                total_end_seconds = end_Minute * 60 + end_Second
+                NONE_SET = st.number_input("Create missing value", 0)
+        if col2.button("Make column"):
             data_colum = []
             if ITEM == options[0]:
                 if TYPE == "INT":
-                    if NONE_SET == "True":  
-                        for i in range(RAWS):
-                            random_number = random.randint(MIN_RANGE, MAX_RANGE+1)
-                            if random_number == MAX_RANGE+1  :
-                                random_number = None # None으로 설정
-                            data_colum.append(random_number)
-                                
-                    else:
-                        for i in range(RAWS):
-                            random_number = random.randint(MIN_RANGE, MAX_RANGE)
-                            data_colum.append(random_number)
+                    for i in range(RAWS):
+                        random_number = random.randint(MIN_RANGE, MAX_RANGE)
+                        data_colum.append(random_number)
                             
                 if TYPE == "STRING":
                     if STR_LANGUAGE == []:
@@ -135,7 +167,11 @@ def main():
                                     letter.append(letter_source)
                                     result_string = ''.join(letter)
                             data_colum.append(result_string)
-                        
+                if TYPE == "FLOAT":
+                    for i in range(RAWS):
+                        random_number = random.uniform(MIN_RANGE, MAX_RANGE)
+                        random_float = f"{random_number:.{DECIMAL_PLACE}f}"
+                        data_colum.append(random_float)
             if ITEM == options[1]: # NAME
                 if NAME_SET == "First_name":
                     for i in range(RAWS):
@@ -149,6 +185,30 @@ def main():
                         b = English_last_name_100[random.randint(0,99)]
                         c = a+f"{COUPLER}"+b
                         data_colum.append(c)
+                        
+            if ITEM == options[2]: # DATE
+                if START_DATE and END_DATE and START_DATE <= END_DATE:
+                    for i in range(RAWS):
+                        days_between = (END_DATE - START_DATE).days + 1
+                        random_days = random.randint(0, days_between - 1)
+                        random_date = START_DATE + timedelta(days=random_days)
+                        data_colum.append(random_date)
+                elif START_DATE and END_DATE:
+                    st.write("End Date should be greater than or equal to Start Date")
+                    
+            if ITEM == options[3]: # TIME
+                for i in range(RAWS):
+                    random_seconds = random.randint(total_start_seconds, total_end_seconds)
+                    random_hour = random_seconds // 3600
+                    random_minute = (random_seconds % 3600) // 60
+                    random_second = random_seconds % 60
+                    if TIME_UNIT == "Hour:Minute":
+                        data_colum.append(f"{random_hour:02d}:{random_minute:02d}")
+                    if TIME_UNIT =="Hour:Minute:Second":
+                        data_colum.append(f"{random_hour:02d}:{random_minute:02d}:{random_second:02d}")
+                    if TIME_UNIT =="Minute:Second":
+                        data_colum.append(f"{random_minute:02d}:{random_second:02d}")
+                    
             if data_colum != []:
                 if NONE_SET != 0:
                     data_colum = make_None(data_colum,NONE_SET)  
