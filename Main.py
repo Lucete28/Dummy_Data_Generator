@@ -38,7 +38,7 @@ def main():
 
     # 구현
     st.title("원하는 만큼 RAW를 생성하세요")
-    RAWS = st.number_input("Raws", 10, 10000, step=50)
+    RAWS = st.number_input("Raws", 10, 1000000, step=50)
     st.markdown("---")
     col21,col22 =st.columns(2)
     if st.session_state.result is not {}:
@@ -234,13 +234,9 @@ def main():
     st.markdown("---")
     col11,col12 =st.columns(2)
     FILE_NAME = col11.text_input("File name")
-    col12.download_button("Download CSV",pd.DataFrame(st.session_state.result).to_csv(index=False))
-    if col12.button("Get Download Link"):
-        if FILE_NAME:
-            try:
-                df = fill_df(st.session_state.result)
-                col12.download_button(download_link(df, f"{FILE_NAME}.csv", "Click Here!"), unsafe_allow_html=True)
-            except:
-                st.warning("Please Make Columns First")
-        else:
-            col12.warning("Please Set File Name")
+    if FILE_NAME:
+        try:
+            df = fill_df(st.session_state.result)
+            col12.download_button("Download CSV",df.to_csv(index=False),file_name=f"{FILE_NAME}.csv")
+        except:
+            st.warning("Please Make Columns First")
