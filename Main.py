@@ -37,17 +37,7 @@ def main():
         return df
 
     # 구현
-    col11,col12 =st.columns(2)
-    FILE_NAME = col11.text_input("File name")
-    if col12.button("Get Download Link"):
-        if FILE_NAME:
-            try:
-                df = fill_df(st.session_state.result)
-                col12.markdown(download_link(df, f"{FILE_NAME}.csv", "Click Here!"), unsafe_allow_html=True)
-            except:
-                st.warning("Please Make Columns First")
-        else:
-            col12.warning("Please Set File Name")
+    st.title("원하는 만큼 RAW를 생성하세요")
     RAWS = st.number_input("Raws", 10, 10000, step=50)
     st.markdown("---")
     col21,col22 =st.columns(2)
@@ -229,15 +219,9 @@ def main():
     st.markdown("---")
     cc1,cc2,cc3,cc4 = st.columns(4)
     couple_start_column = cc1.radio("Start_Column",st.session_state.result)
-    couple_coupler = cc2.text_input("Coupler")
+    couple_coupler = cc2.text_input("Coupler","-")
     couple_end_column = cc3.radio("End_Column",st.session_state.result)
     
-    
-# my_dict = {"key1": ["value1","value11"], "key2": ["value2","value12"], "key3": ["value3","value13"]}
-# l2 = []
-# c="-"
-# for i in range(2):
-#     l2.append(f"{my_dict['key1'][i]}{c}{my_dict['key2'][i]}")
     
     new_col_name = cc4.text_input("새로운 이름을 입력하세요")
     if cc4.button("합체"):
@@ -247,4 +231,16 @@ def main():
         st.session_state.result[new_col_name] = new_col_li
         st.experimental_rerun()
 
-
+    st.markdown("---")
+    col11,col12 =st.columns(2)
+    FILE_NAME = col11.text_input("File name")
+    col12.download_button("Download CSV",pd.DataFrame(st.session_state.result).to_csv(index=False))
+    if col12.button("Get Download Link"):
+        if FILE_NAME:
+            try:
+                df = fill_df(st.session_state.result)
+                col12.download_button(download_link(df, f"{FILE_NAME}.csv", "Click Here!"), unsafe_allow_html=True)
+            except:
+                st.warning("Please Make Columns First")
+        else:
+            col12.warning("Please Set File Name")
